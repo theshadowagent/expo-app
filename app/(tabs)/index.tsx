@@ -1,16 +1,10 @@
-import { StyleSheet } from "react-native";
-
-import { Text, View } from "@/components/Themed";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function TabOneScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab One</Text>
-      <View
-        style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
-      />
+      <View style={styles.separator} />
       <Text>
         This is an example tab. You can edit it in app/%28tabs%29/index.tsx.
       </Text>
