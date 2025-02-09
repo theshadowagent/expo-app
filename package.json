@@ -36,8 +36,7 @@
     "react-native-screens": "~4.1.0",
     "zustand": "^5.0.2",
     "react-native-web": "~0.19.13",
-    "lucide-react-native": "^0.475.0",
-    "date-fns": "^4.1.0"
+    "lucide-react-native": "^0.475.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
