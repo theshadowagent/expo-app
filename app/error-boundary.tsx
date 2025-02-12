@@ -19,6 +19,31 @@ const webTargetOrigins = [
   "https://rork.app",
 ];    
 
+function sendErrorToIframeParent(error: any, errorInfo?: any) {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    window.parent.postMessage({
+      type: 'ERROR',
+      error: {
+        message: error.message || error.toString(),
+        stack: error.stack,
+        componentStack: errorInfo?.componentStack,
+        timestamp: new Date().toISOString(),
+      },
+      iframeId: iframeId,
+    }, webTargetOrigins.includes(document.referrer) ? document.referrer : '*');
+  }
+}
+
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    sendErrorToIframeParent(event.error || event);
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    sendErrorToIframeParent(event.reason);
+  });
+}
+
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -30,18 +55,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      window.parent.postMessage({
-        type: 'ERROR',
-        error: {
-          message: error.message,
-          stack: error.stack,
-          componentStack: errorInfo.componentStack,
-          timestamp: new Date().toISOString(),
-        },
-        iframeId: iframeId,
-      }, webTargetOrigins.includes(document.referrer) ? document.referrer : '*');
-    }
+    sendErrorToIframeParent(error, errorInfo);
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
