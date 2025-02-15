@@ -11,7 +11,7 @@ interface State {
   error: Error | null;
 }
 
-const iframeId = 'rork-web-preview';
+const IFRAME_ID = 'rork-web-preview';
 
 const webTargetOrigins = [
   "http://localhost:3000",
@@ -21,27 +21,50 @@ const webTargetOrigins = [
 
 function sendErrorToIframeParent(error: any, errorInfo?: any) {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
-    window.parent.postMessage({
+    console.debug('Sending error to parent:', {
+      error,
+      errorInfo,
+      referrer: document.referrer
+    });
+
+    const errorMessage = {
       type: 'ERROR',
       error: {
-        message: error.message || error.toString(),
-        stack: error.stack,
+        message: error?.message || error?.toString() || 'Unknown error',
+        stack: error?.stack,
         componentStack: errorInfo?.componentStack,
         timestamp: new Date().toISOString(),
       },
-      iframeId: iframeId,
-    }, webTargetOrigins.includes(document.referrer) ? document.referrer : '*');
+      iframeId: IFRAME_ID,
+    };
+
+    try {
+      window.parent.postMessage(
+        errorMessage,
+        webTargetOrigins.includes(document.referrer) ? document.referrer : '*'
+      );
+    } catch (postMessageError) {
+      console.error('Failed to send error to parent:', postMessageError);
+    }
   }
 }
 
 if (Platform.OS === 'web' && typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
+    event.preventDefault();
     sendErrorToIframeParent(event.error || event);
-  });
+  }, true);
 
   window.addEventListener('unhandledrejection', (event) => {
+    event.preventDefault();
     sendErrorToIframeParent(event.reason);
-  });
+  }, true);
+
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    sendErrorToIframeParent(args.join(' '));
+    originalConsoleError.apply(console, args);
+  };
 }
 
 export class ErrorBoundary extends React.Component<Props, State> {
