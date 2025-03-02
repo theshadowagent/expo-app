@@ -52,7 +52,13 @@ function sendErrorToIframeParent(error: any, errorInfo?: any) {
 if (Platform.OS === 'web' && typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
     event.preventDefault();
-    sendErrorToIframeParent(event.error || event);
+    const errorDetails = event.error ?? {
+      message: event.message ?? 'Unknown error',
+      filename: event.filename ?? 'Unknown file',
+      lineno: event.lineno ?? 'Unknown line',
+      colno: event.colno ?? 'Unknown column'
+    };
+    sendErrorToIframeParent(errorDetails);
   }, true);
 
   window.addEventListener('unhandledrejection', (event) => {
