@@ -22,8 +22,18 @@
         "backgroundColor": "#ffffff"
       }
     },
-
-    "plugins": ["expo-router"],
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "output": "server"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://rork.app/"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
